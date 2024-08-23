@@ -1,20 +1,24 @@
 package repository
 
-import "github.com/Arturlima/crud-go/models"
+import (
+	"errors"
+
+	"github.com/Arturlima/crud-go/models"
+)
 
 type IUserRepository interface {
 	FindAll() ([]models.User, error)
 	FindById(Id string) (models.User, error)
-	Insert(user *models.User) (models.User, error)
+	Insert(user *models.User) (*models.User, error)
 	Update(Id string) (models.User, error)
 	Delete(id string) error
 }
 
 type UserRepository struct {
-	context *map[string]models.User
+	context map[string]models.User
 }
 
-func NewUserRepository(u *map[string]models.User) IUserRepository {
+func NewUserRepository(u map[string]models.User) IUserRepository {
 	return &UserRepository{
 		context: u,
 	}
@@ -35,9 +39,13 @@ func (u *UserRepository) FindById(Id string) (models.User, error) {
 	panic("unimplemented")
 }
 
-// Insert implements IUserRepository.
-func (u *UserRepository) Insert(user *models.User) (models.User, error) {
-	panic("unimplemented")
+func (u *UserRepository) Insert(user *models.User) (*models.User, error) {
+	u.context[user.ID] = *user
+	if _, ok := u.context[user.ID]; !ok {
+		return nil, errors.New("falied to insert user")
+	}
+
+	return user, nil
 }
 
 // Update implements IUserRepository.

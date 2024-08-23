@@ -22,15 +22,15 @@ func run() error {
 
 	db := make(map[string]models.User)
 
-	handler := api.NewHandler()
+	repo := repository.NewUserRepository(db)
 
-	repository.NewUserRepository(&db)
+	handler := api.NewHandler(repo)
 
 	s := http.Server{
 		ReadTimeout:  10 * time.Second,
 		IdleTimeout:  time.Minute,
 		WriteTimeout: 10 * time.Second,
-		Addr:         "8080",
+		Addr:         ":8080",
 		Handler:      handler,
 	}
 
