@@ -21,8 +21,8 @@ func NewHandler(repo repository.IUserRepository) http.Handler {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/api", func(r chi.Router) {
-		r.Get("/users", handlerUserGet)
-		r.Get("/users/{id}", handlerUserGetById)
+		r.Get("/users", handlerUserGet(repo))
+		r.Get("/users/{id}", handlerUserGetById(repo))
 		r.Post("/users", handlerUserPost(repo))
 		r.Delete("/users/{id}", handlerUserDelete)
 		r.Put("/users/{id}", handlerUserPut)
@@ -30,12 +30,49 @@ func NewHandler(repo repository.IUserRepository) http.Handler {
 
 	return r
 }
-
-func handlerUserGet(w http.ResponseWriter, r *http.Request) {
-
+func handlerUserGet(repo repository.IUserRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		users, err := repo.FindAll()
+		if err != nil {
+			utils.SendJSON(
+				w,
+				utils.Response{Error: "The users information could not be retrieved"},
+				http.StatusInternalServerError,
+			)
+		}
+		utils.SendJSON(w, utils.Response{Data: users}, http.StatusOK)
+	}
 }
-func handlerUserGetById(w http.ResponseWriter, r *http.Request) {
 
+func handlerUserGetById(repo repository.IUserRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.URL.Query().Get("id")
+
+		user, err := repo.FindById(id)
+		if err != nil {
+			utils.SendJSON(
+				w,
+				utils.Response{Error: "The user information could not be retrieved"},
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		if user == nil {
+			utils.SendJSON(
+				w,
+				utils.Response{Error: "The user with the specified ID does not exist"},
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		utils.SendJSON(
+			w,
+			utils.Response{Data: user},
+			http.StatusOK,
+		)
+
+	}
 }
 func handlerUserPost(repo repository.IUserRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

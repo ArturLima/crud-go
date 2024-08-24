@@ -8,7 +8,7 @@ import (
 
 type IUserRepository interface {
 	FindAll() ([]models.User, error)
-	FindById(Id string) (models.User, error)
+	FindById(Id string) (*models.User, error)
 	Insert(user *models.User) (*models.User, error)
 	Update(Id string) (models.User, error)
 	Delete(id string) error
@@ -24,19 +24,21 @@ func NewUserRepository(u map[string]models.User) IUserRepository {
 	}
 }
 
-// Delete implements IUserRepository.
-func (u *UserRepository) Delete(id string) error {
-	panic("unimplemented")
-}
-
-// FindAll implements IUserRepository.
 func (u *UserRepository) FindAll() ([]models.User, error) {
-	panic("unimplemented")
+	var users []models.User
+
+	for _, u := range u.context {
+		users = append(users, u)
+	}
+	return users, nil
 }
 
-// FindById implements IUserRepository.
-func (u *UserRepository) FindById(Id string) (models.User, error) {
-	panic("unimplemented")
+func (u *UserRepository) FindById(Id string) (*models.User, error) {
+	user, err := u.context[Id]
+	if err {
+		return nil, nil
+	}
+	return &user, nil
 }
 
 func (u *UserRepository) Insert(user *models.User) (*models.User, error) {
@@ -48,7 +50,10 @@ func (u *UserRepository) Insert(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-// Update implements IUserRepository.
 func (u *UserRepository) Update(Id string) (models.User, error) {
+	panic("unimplemented")
+}
+
+func (u *UserRepository) Delete(id string) error {
 	panic("unimplemented")
 }
