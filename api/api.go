@@ -24,7 +24,7 @@ func NewHandler(repo repository.IUserRepository) http.Handler {
 		r.Get("/users", handlerUserGet(repo))
 		r.Get("/users/{id}", handlerUserGetById(repo))
 		r.Post("/users", handlerUserPost(repo))
-		r.Delete("/users/{id}", handlerUserDelete)
+		r.Delete("/users/{id}", handlerUserDelete(repo))
 		r.Put("/users/{id}", handlerUserPut)
 	})
 
@@ -46,7 +46,7 @@ func handlerUserGet(repo repository.IUserRepository) http.HandlerFunc {
 
 func handlerUserGetById(repo repository.IUserRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.URL.Query().Get("id")
+		id := chi.URLParam(r, "id")
 
 		user, err := repo.FindById(id)
 		if err != nil {
@@ -61,7 +61,7 @@ func handlerUserGetById(repo repository.IUserRepository) http.HandlerFunc {
 			utils.SendJSON(
 				w,
 				utils.Response{Error: "The user with the specified ID does not exist"},
-				http.StatusInternalServerError,
+				http.StatusNotFound,
 			)
 			return
 		}
@@ -108,8 +108,26 @@ func handlerUserPost(repo repository.IUserRepository) http.HandlerFunc {
 	}
 }
 
-func handlerUserDelete(w http.ResponseWriter, r *http.Request) {
+func handlerUserDelete(repo repository.IUserRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
 
+		err := repo.Delete(id)
+		if err != nil {
+			utils.SendJSON(
+				w,
+				utils.Response{Error: "The user with the specified ID does not exist"},
+				http.StatusNotFound,
+			)
+			return
+		}
+		utils.SendJSON(
+			w,
+			utils.Response{},
+			http.StatusOK,
+		)
+
+	}
 }
 
 func handlerUserPut(w http.ResponseWriter, r *http.Request) {

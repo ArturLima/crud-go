@@ -35,7 +35,7 @@ func (u *UserRepository) FindAll() ([]models.User, error) {
 
 func (u *UserRepository) FindById(Id string) (*models.User, error) {
 	user, err := u.context[Id]
-	if err {
+	if !err {
 		return nil, nil
 	}
 	return &user, nil
@@ -55,5 +55,6 @@ func (u *UserRepository) Update(Id string) (models.User, error) {
 }
 
 func (u *UserRepository) Delete(id string) error {
-	panic("unimplemented")
+	delete(u.context, id)
+	return nil
 }
