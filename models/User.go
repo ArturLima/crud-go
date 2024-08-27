@@ -6,3 +6,8 @@ type User struct {
 	LastName  string `json:"last_name" validate:"required,min=2,max=20"`
 	Biography string `json:"biography" validate:"required,min=2,max=450"`
 }
+
+type PartialUser struct {
+	LastName  *string `json:"last_name" validate:"omitempty,min=2,max=20"`
+	Biography *string `json:"biography" validate:"omitempty,min=2,max=450"`
+}

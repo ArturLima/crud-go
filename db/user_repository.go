@@ -10,7 +10,7 @@ type IUserRepository interface {
 	FindAll() ([]models.User, error)
 	FindById(Id string) (*models.User, error)
 	Insert(user *models.User) (*models.User, error)
-	Update(Id string) (models.User, error)
+	Update(user *models.User, lastName string, bio string) (*models.User, error)
 	Delete(id string) error
 }
 
@@ -50,8 +50,10 @@ func (u *UserRepository) Insert(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) Update(Id string) (models.User, error) {
-	panic("unimplemented")
+func (u *UserRepository) Update(user *models.User, lastName string, bio string) (*models.User, error) {
+	user.LastName = lastName
+	user.Biography = bio
+	return user, nil
 }
 
 func (u *UserRepository) Delete(id string) error {

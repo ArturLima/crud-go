@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	repository "github.com/Arturlima/crud-go/db"
@@ -25,7 +26,7 @@ func NewHandler(repo repository.IUserRepository) http.Handler {
 		r.Get("/users/{id}", handlerUserGetById(repo))
 		r.Post("/users", handlerUserPost(repo))
 		r.Delete("/users/{id}", handlerUserDelete(repo))
-		r.Put("/users/{id}", handlerUserPut)
+		r.Put("/users/{id}", handlerUserPut(repo))
 	})
 
 	return r
@@ -130,6 +131,45 @@ func handlerUserDelete(repo repository.IUserRepository) http.HandlerFunc {
 	}
 }
 
-func handlerUserPut(w http.ResponseWriter, r *http.Request) {
+func handlerUserPut(repo repository.IUserRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		var partialUser models.PartialUser
 
+		if err := json.NewDecoder(r.Body).Decode(&partialUser); err != nil {
+			utils.SendJSON(
+				w,
+				utils.Response{Error: "Please provide name and bio for the user"},
+				http.StatusBadRequest,
+			)
+			return
+		}
+
+		user, err := repo.FindById(id)
+		if err != nil {
+			utils.SendJSON(
+				w,
+				utils.Response{Error: "The user with the specified ID does not exist"},
+				http.StatusNotFound,
+			)
+			return
+		}
+
+		userUpdate, err := repo.Update(user, *partialUser.LastName, *partialUser.Biography)
+		if err != nil {
+			utils.SendJSON(
+				w,
+				utils.Response{Error: "The user information could not be modified"},
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		fmt.Println("user new: ", userUpdate)
+
+		utils.SendJSON(
+			w,
+			utils.Response{Data: userUpdate},
+			http.StatusOK,
+		)
+	}
 }
